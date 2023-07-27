@@ -1,0 +1,68 @@
+#this is a repeatable instruction of mongo-app.yaml, so copy from there and do some modifications..
+
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: webapp-deployment
+  labels:
+    app: webapp
+spec:
+  replicas: 1 
+  selector:
+    matchLabels:
+      app: webapp
+  template:
+    metadata:
+      labels:
+        app: webapp
+    spec:
+      containers:
+      - name: mongo-express
+        image: mongo-express:latest   #use latest or any version of image from docker hub
+        ports:
+        - containerPort: 8081   #port number from dockerhub mongoexpress documentation
+        env:
+        - name: ME_CONFIG_MONGODB_ADMINUSERNAME
+          valueFrom:
+            secretKeyRef:
+              name: mongo-secret   #provide the metadata name of secret
+              key: mongo-user  #in the secret, i used the key as mongo-user
+        - name: ME_CONFIG_MONGODB_ADMINPASSWORD
+          valueFrom:
+            secretKeyRef:
+              name: mongo-secret   #provide the metadata name of secret
+              key: mongo-password  #in the secret, i used the key as mongo-password
+        - name: ME_CONFIG_MONGODB_SERVER 
+          valueFrom:
+            configMapKeyRef:
+              name: mongo-config   #provide the file name of config
+              key: mongo-url   #take the key from mongo-config
+
+---   #means the break of the yaml file, also we can seperate this in two files,, common convention is to keep in same file
+
+# apiVersion: v1
+# kind: Service
+# metadata:
+#   name: mongo-service
+# spec:
+#   selector:
+#     app: mongo    #connected to mongo deployment
+#   ports:
+#     - protocol: TCP
+#       port: 27017  #here we can use any port, this is the port with others connect
+#       targetPort: 27017  #this is the mongodb default port
+
+ 
+apiVersion: v1
+kind: Service
+metadata:
+  name: webapp-service
+spec:
+  type: NodePort
+  selector:
+    app: webapp    
+  ports:
+    - protocol: TCP
+      port: 8081  #here we can use any port, this is the port with others connect
+      targetPort: 8081   #taken from container port
+      nodePort: 30200   #throught the nodport this connects to the outside wordl, in kubernetes, nodeport should only have a rang between 30000 - 32767, so any port can be used within this range

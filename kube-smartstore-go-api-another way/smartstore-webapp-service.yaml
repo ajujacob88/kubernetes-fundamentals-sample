@@ -1,0 +1,13 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: smartstore-webapp-service
+spec:
+  type: NodePort
+  selector:
+    app: smartstore-webapp    
+  ports:
+    - protocol: TCP
+      port: 3000
+      targetPort: 3000
+      nodePort: 30300   #throught the nodport this connects to the outside wordl, in kubernetes, nodeport should only have a rang between 30000 - 32767, so any port can be used within this range

@@ -1,0 +1,27 @@
+# apiVersion: v1
+# kind: ConfigMap
+# metadata:
+#   name: postgres-config
+# data:
+#   postgres-url: postgres-service    #mongo-service is the service metadata name copied from mongo-app
+
+
+
+
+#chatgpt version below
+
+
+# apiVersion: v1
+# kind: ConfigMap
+# metadata:
+#   name: postgres-config
+# data:
+#   # Define other configuration data if needed, but do not set the postgres-url here.
+
+
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: postgres-config
+data:
+  postgres-url: postgres-service

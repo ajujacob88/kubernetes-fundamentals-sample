@@ -1,0 +1,49 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: mongo-deployment
+  labels:
+    app: mongo
+spec:
+  replicas: 1 
+  selector:
+    matchLabels:
+      app: mongo
+  template:
+    metadata:
+      labels:
+        app: mongo
+    spec:
+      containers:
+      - name: mongo
+        image: mongo:6.0   #use latest or any version of image from docker hub
+        ports:
+        - containerPort: 27017
+        env:
+        - name: MONGO_INITDB_ROOT_USERNAME
+          valueFrom:
+            secretKeyRef:
+              name: mongo-secret   #provide the file name of secret
+              key: mongo-user  #in the secret, i used the key as mongo-user
+        - name: MONGO_INITDB_ROOT_PASSWORD
+          valueFrom:
+            secretKeyRef:
+              name: mongo-secret   #provide the file name of secret
+              key: mongo-password  #in the secret, i used the key as mongo-password
+
+
+---   #means the break of the yaml file, also we can seperate this in two files,, common convention is to keep in same file
+
+apiVersion: v1
+kind: Service
+metadata:
+  name: mongo-service
+spec:
+  selector:
+    app: mongo    #connected to mongo deployment
+  ports:
+    - protocol: TCP
+      port: 27017  #here we can use any port, this is the port with others connect
+      targetPort: 27017  #this is the mongodb default port
+
+ 

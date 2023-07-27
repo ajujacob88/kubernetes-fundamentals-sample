@@ -1,0 +1,118 @@
+# #this is a repeatable instruction of mongo-app.yaml, so copy from there and do some modifications..
+
+# apiVersion: apps/v1
+# kind: Deployment
+# metadata:
+#   name: smartstore-webapp-deployment
+#   labels:
+#     app: smartstore-webapp
+# spec:
+#   replicas: 1 
+#   selector:
+#     matchLabels:
+#       app: smartstore-webapp
+#   template:
+#     metadata:
+#       labels:
+#         app: smartstore-webapp
+#     spec:
+#       containers:
+#       - name: web-ecommerce-app
+#         image: ajujacob/smarstore-ecommerce-api:0.0.1.RELEASE   #use latest or any version of image from docker hub
+#         ports:
+#         - containerPort: 3000   #port number from dockerhub mongoexpress documentation
+#         env:
+#         - name: POSTGRES_USER
+#           valueFrom:
+#             secretKeyRef:
+#               name: postgres-secret   #provide the metadata name of secret
+#               key: mpostgres-user  #in the secret, i used the key as mongo-user
+#         - name: POSTGRES_PASSWORD
+#           valueFrom:
+#             secretKeyRef:
+#               name: postgres-secret   #provide the metadata name of secret
+#               key: postgres-password  #in the secret, i used the key as mongo-password
+#         - name: POSTGRES_DB
+#           valueFrom:
+#             secretKeyRef:
+#               name: postgres-secret   #provide the file name of secret
+#               key: postgres-db
+
+# ---   #means the break of the yaml file, also we can seperate this in two files,, common convention is to keep in same file
+
+# apiVersion: v1
+# kind: Service
+# metadata:
+#   name: smartstore-webapp-service
+# spec:
+#   type: NodePort
+#   selector:
+#     app: smartstore-webapp    
+#   ports:
+#     - protocol: TCP
+#       port: 3000  #here we can use any port, this is the port with others connect
+#       targetPort: 3000   #taken from container port
+#       nodePort: 30300   #throught the nodport this connects to the outside wordl, in kubernetes, nodeport should only have a rang between 30000 - 32767, so any port can be used within this range
+
+
+
+
+#chatgpt version below
+
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: smartstore-webapp-deployment
+  labels:
+    app: smartstore-webapp
+spec:
+  replicas: 1 
+  selector:
+    matchLabels:
+      app: smartstore-webapp
+  template:
+    metadata:
+      labels:
+        app: smartstore-webapp
+    spec:
+      containers:
+      - name: web-ecommerce-app
+        image: ajujacob/smarstore-ecommerce-api:0.0.1.RELEASE # Use the correct image for the Smartstore web application
+        ports:
+        - containerPort: 3000
+        env:
+        - name: DB_HOST                 #this name is actually the name in the env file, then only it will work
+          value: postgres-service
+        - name: DB_NAME
+          valueFrom:
+            secretKeyRef:
+              name: postgres-secret
+              key: postgres-db
+        - name: DB_USER
+          valueFrom:
+            secretKeyRef:
+              name: postgres-secret
+              key: postgres-user
+        - name: DB_PORT
+          value: "5432"
+        - name: DB_PASSWORD
+          valueFrom:
+            secretKeyRef:
+              name: postgres-secret
+              key: postgres-password
+
+---
+
+apiVersion: v1
+kind: Service
+metadata:
+  name: smartstore-webapp-service
+spec:
+  type: NodePort
+  selector:
+    app: smartstore-webapp    
+  ports:
+    - protocol: TCP
+      port: 3000
+      targetPort: 3000
+      nodePort: 30300
